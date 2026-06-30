@@ -109,7 +109,7 @@ ultrapilot is portable. The agent's runtime provides the tools. Per AICodeKing's
 | **Documentation fetcher** (e.g. Context 7) | Plan/Build phases | Get current framework docs (Next.js, Supabase, Tailwind, Prisma, etc.) without trusting the model's memory |
 | **Browser / dev tools / Playwright** | Verify phase (UI work) | Open the app, check console errors, click through flows, test mobile |
 | **Git worktree** (optional) | All phases | Isolated branches for parallel runs (per AICodeKing's worktree mention) |
-| **Vision model** (optional) | Build phase (UI references) | GLM 5.2 is text-only; convert screenshots to text descriptions |
+| **Vision model** (optional) | Build phase (UI references) | Convert screenshots to text descriptions if the active model can't process images — see `references/adapter-prompts.md` for per-model vision support |
 
 ultrapilot references these in the verify prompt ("Open dev tools, check console") but does not ship them. The agent's runtime must provide them. If your runtime lacks any of these, ultrapilot still works — those steps become advisory.
 
