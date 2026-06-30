@@ -19,7 +19,7 @@ Execute the plan in small, verifiable steps. Match the existing codebase. No sco
 4. **Run available checks after each meaningful step** (tests, typecheck, lint, build).
 5. **Use the discipline layer if it was loaded** (the goal phase may have set it).
 
-**Note on step size:** AICodeKing's source trusted GLM 5.2 to "hold a lot of project context" and edit multiple files. ultrapilot is **more conservative** by design because the skill is model-agnostic. Smaller steps = safer across more models. If you are using a strong model (Claude Opus, GPT-Codex, GLM 5.2) and want to relax this, edit the build prompt's rule 1 in `prompts/build.md`.
+**Note on step size:** ultrapilot is intentionally **conservative** — small steps, single-file when possible — because the skill is model-agnostic and a smaller step is safer across more models. Some models with very large context windows can edit multiple files in one step without losing coherence, but the orchestrator does not assume that capability. If you are using a model you know can hold the context, you can relax this by editing the build prompt's rule 1 in `prompts/build.md`.
 
 ## When to stop and steer
 - Plan is vague → ask: "Which X, where, and how will you test it?"

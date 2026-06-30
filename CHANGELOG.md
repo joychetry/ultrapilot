@@ -8,7 +8,7 @@ First public release. This is the initial version published to all supported mar
 
 ### What's in this release
 
-`/ultrapilot` is a single-command engineering orchestrator that runs a full `explore → plan → build → verify → review → patch` lifecycle with multi-dimensional goal scoring. It is **model-agnostic** (works with GLM 5.2, Claude, Codex, Gemini, and any LLM coding tool) and **token-optimized** via lazy phase loading — a full 7-phase run costs ~2,000 tokens, down from ~22,000 if all specs were loaded up front.
+`/ultrapilot` is a single-command engineering orchestrator that runs a full `explore → plan → build → verify → review → patch` lifecycle with multi-dimensional goal scoring. It is **model-agnostic** (works with any LLM coding tool — adapters for capability classes are in `references/adapter-prompts.md`) and **token-optimized** via lazy phase loading — a full 7-phase run costs ~2,000 tokens, down from ~22,000 if all specs were loaded up front.
 
 The orchestrator's loop is:
 
@@ -39,13 +39,12 @@ Multi-dimensional success criteria with six dimensions and weights:
 
 ### Discipline layer (gated, default OFF)
 
-`/ultrapilot:_discipline` is a generalized form of AICodeKing's King Mode prompt. The orchestrator loads it only when the task-complexity classifier decides the task is heavy.
+`/ultrapilot:_discipline` is the orchestrator's gated thinking layer. The orchestrator loads it only when the task-complexity classifier decides the task is heavy.
 
 - **8 heuristic triggers** (file count, line count, abstractions, cross-cutting changes, etc.)
 - **3 explicit triggers** (`ULTRATHINK` keyword, `--deep` flag, `--hard`/`--deep` aliases)
 - **Override flags**: `--quick` and `--trivial` to force discipline OFF
 - **ULTRATHINK mode** for deep-reasoning response format, toggleable mid-run (`ULTRATHINK OFF` to exit)
-- The original King Mode prompt is archived at `references/king-mode-prompt.md` with attribution
 
 ### Review system (v2)
 
@@ -93,9 +92,10 @@ Detection is via environment variables only — no agent runtime APIs, no agent-
 - `/ultrapilot:goals` — multi-dimensional goal management
 - `/ultrapilot:_discipline` — internal discipline module (gated, rarely invoked directly)
 
-### Source & inspiration
+### Inspiration
 
-- **AICodeKing's King Mode** ([video](https://www.youtube.com/watch?v=JRuwxLNXfcY), [GitHub](https://github.com/aicodeking)) — the discipline layer and "right tool for the task" framing
+ultrapilot synthesizes patterns that are widely used across the LLM-coding-agent space. The structured-loop-with-gates shape (spec → plan → build → verify → review → patch → audit) appears in many agent-skill repos. Specific influences:
+
 - **Addy Osmani's [agent skills repo](https://github.com/addyosmani/agent-skills)** — the lifecycle shape (spec → plan → build → test → review → simplify → ship); specific skills from that repo are not bundled, only the lifecycle pattern is honored
 - **Anthropic's [claude-code code-review plugin](https://github.com/anthropics/claude-code/blob/main/plugins/code-review/commands/code-review.md)** — multi-agent review with confidence scoring
 - **[jthack/claude-goal](https://github.com/jthack/claude-goal)** — SQLite state, completion audit, anti-prompt-injection patterns
@@ -104,12 +104,11 @@ Detection is via environment variables only — no agent runtime APIs, no agent-
 - **GStack** ([garrytan/gstack](https://github.com/garrytan/gstack)) — `/autoplan` scope modes, auto-decision principles
 - **Anthropic Claude Code `/goal`** (closed-source, [docs only](https://code.claude.com/docs/en/goal)) — completion-condition pattern
 
-### Verification
+The discipline layer's content (multi-lens analysis, anti-fluff response format, project-discipline) is a common pattern in prompt engineering; ultrapilot's contribution is the **gated activation** and the per-phase lazy loading, not the layer's text.
 
-`/ultrapilot` was audited against AICodeKing's source material before release. The full audit is in `examples/08-verification-aicodeking.md`. Two real gaps were found and fixed:
+### Design audit
 
-1. **Tools the agent must bring** — Context 7, web reader, Playwright are expected but not provided. This is now stated explicitly in SKILL.md.
-2. **Build-phase conservatism** — ultrapilot is more conservative than AICodeKing's source. The reasoning and the override are documented in `prompts/build.md`.
+A self-audit of ultrapilot's deliberate design decisions and trade-offs lives in `examples/08-design-decisions.md`. It records what was chosen, what was rejected, and what would change the decision.
 
 ### Install
 

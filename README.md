@@ -115,7 +115,7 @@ The skill's runtime (`scripts/ultrapilot_goals.py` and `scripts/ultrapilot_run.p
 
 ## Discipline layer (gated, default OFF)
 
-Includes a discipline module derived from [AICodeKing's King Mode](https://github.com/aicodeking/yt-tutorial/blob/main/gemini-king-mode.md) — but loaded only when the task complexity justifies it. Trivial tasks skip it. Heavy tasks get it. Override with `--deep` (force ON) or `--quick` (force OFF). `ULTRATHINK` in the prompt also forces it ON.
+Includes a discipline module — gated by a task-complexity classifier, default OFF. Trivial tasks skip it. Heavy tasks get it. Override with `--deep` (force ON) or `--quick` (force OFF). `ULTRATHINK` in the prompt also forces it ON.
 
 ## Multi-dimensional goal system (Phase 0)
 
@@ -127,7 +127,7 @@ Derived from [Braintrust's agent evaluation framework](https://www.braintrust.de
 
 ## Tools the agent must bring (required, not provided)
 
-ultrapilot is portable. The agent's runtime provides the tools. Per AICodeKing's minimal stack:
+ultrapilot is portable. The agent's runtime provides the tools. Minimal stack:
 
 | Tool | Used in | Why |
 |------|---------|-----|
@@ -175,9 +175,8 @@ ultrapilot/
 
 Built from the synthesis of:
 
-- **[AICodeKing's "Maximizing GLM 5.2 Performance in Zcode"](https://youtu.be/HarkkqC9hpA)** (Jun 2026) — the explore → plan → build → verify → review → patch loop. Verified against the source in [`examples/08-verification-aicodeking.md`](examples/08-verification-aicodeking.md).
-- **[Addy Osmani's agent skills repo](https://github.com/addyosmani/agent-skills)** — the lifecycle: spec → plan → build → test → review → simplify → ship.
-- **[obra's Superpowers framework](https://github.com/obra/superpowers)** — lifecycle shape only; specific skills not bundled.
+- The **structured-loop-with-gates** pattern: spec → plan → build → verify → review → patch. This shape is widely used (Anthropic's internal workflows, Addy Osmani's agent skills repo, obra's Superpowers framework). ultrapilot's specific implementation is independent.
+- **Capability-class adapters** (in [`references/adapter-prompts.md`](references/adapter-prompts.md)) for behavior patterns observed across many chat and code models — not model-specific tuning.
 - **[Anthropic's claude-code `code-review` plugin](https://github.com/anthropics/claude-code/blob/main/plugins/code-review/commands/code-review.md)** — multi-perspective review with confidence scoring.
 - **[jthack/claude-goal](https://github.com/jthack/claude-goal)** — persistent goal state via SQLite, completion audit.
 - **[Braintrust: Agent Evaluation](https://www.braintrust.dev/articles/agent-evaluation)** — multi-dimensional scoring framework.

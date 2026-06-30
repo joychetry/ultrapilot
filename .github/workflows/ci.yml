@@ -106,7 +106,6 @@ jobs:
               ('prompts/plan.md',                'skills/ultrapilot/prompts/plan.md'),
               ('prompts/review.md',              'skills/ultrapilot/prompts/review.md'),
               ('prompts/verify.md',              'skills/ultrapilot/prompts/verify.md'),
-              ('references/king-mode-prompt.md', 'skills/ultrapilot/references/king-mode-prompt.md'),
               ('scripts/ultrapilot_goals.py',    'skills/ultrapilot/scripts/ultrapilot_goals.py'),
               ('scripts/ultrapilot_run.py',      'skills/ultrapilot/scripts/ultrapilot_run.py'),
           ]

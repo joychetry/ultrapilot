@@ -101,14 +101,14 @@ The user types one of these to skip the auto-advance and jump to a specific phas
 
 ## Tools the agent must bring (required, not provided)
 
-ultrapilot is portable. The agent's runtime provides the tools. Per AICodeKing's minimal stack, the agent needs:
+ultrapilot is portable. The agent's runtime provides the tools. The minimal stack the agent needs:
 
 | Tool | Used in | Why |
 |------|---------|-----|
 | **Web search / web reader** | Explore phase (read project structure) | Discover current API changes, package versions, recent docs |
 | **Documentation fetcher** (e.g. Context 7) | Plan/Build phases | Get current framework docs (Next.js, Supabase, Tailwind, Prisma, etc.) without trusting the model's memory |
 | **Browser / dev tools / Playwright** | Verify phase (UI work) | Open the app, check console errors, click through flows, test mobile |
-| **Git worktree** (optional) | All phases | Isolated branches for parallel runs (per AICodeKing's worktree mention) |
+| **Git worktree** (optional) | All phases | Isolated branches for parallel runs |
 | **Vision model** (optional) | Build phase (UI references) | Convert screenshots to text descriptions if the active model can't process images — see `references/adapter-prompts.md` for per-model vision support |
 
 ultrapilot references these in the verify prompt ("Open dev tools, check console") but does not ship them. The agent's runtime must provide them. If your runtime lacks any of these, ultrapilot still works — those steps become advisory.
@@ -164,7 +164,7 @@ Don't use `/ultrapilot` for:
 | `/ultrapilot:verify` | Run tests, lint, type checks, browser checks. | 4 — Verify |
 | `/ultrapilot:review` | Multi-perspective diff audit with validation gating. | 5 — Review |
 | `/ultrapilot:steer` | Tighten a vague plan mid-flight. | Any — Steering |
-| `/ultrapilot:_discipline` | Internal discipline module. Generalized King Mode. Loaded only when the task-complexity gate triggers. Default OFF. | (Internal) |
+| `/ultrapilot:_discipline` | Internal discipline module. Gated thinking layer for heavy tasks. Loaded only when the task-complexity classifier triggers. Default OFF. | (Internal) |
 
 You do not need to call these directly. The orchestrator dispatches them. But they exist as standalone slash commands when you want to invoke a single phase. See `commands/` for each phase's full spec.
 
@@ -216,7 +216,7 @@ The orchestrator starts every run with a goal-design phase. v1 of ultrapilot had
 
 ## The Discipline Layer (gated, default OFF)
 
-The orchestrator includes a discipline layer derived from AICodeKing's [King Mode prompt](https://github.com/aicodeking/yt-tutorial/blob/main/gemini-king-mode.md). The layer is **not** always loaded. It is gated by a task-complexity classifier so the model does not waste quota on small tasks.
+The orchestrator includes a discipline layer for heavy tasks. The layer is **not** always loaded. It is gated by a task-complexity classifier so the model does not waste quota on small tasks.
 
 **Activation triggers (any one is enough):**
 
@@ -252,9 +252,9 @@ The orchestrator includes a discipline layer derived from AICodeKing's [King Mod
 
 Mid-run toggle (`ULTRATHINK OFF`, `EXIT ULTRATHINK`, `RESUME NORMAL`) deactivates the deep-reasoning format and returns to concise. The announcement is sticky for the rest of the run unless explicitly deactivated. See `commands/_discipline.md` for the full activation protocol.
 
-**Why gated, not always-on:** AICodeKing's own video warns against loading it for every task. Renames, typos, and small fixes do not need the discipline layer. The gate concentrates reasoning on tasks that need it.
+**Why gated, not always-on:** loading the discipline layer for every task wastes quota. Renames, typos, and small fixes do not need it. The gate concentrates reasoning on tasks that need it.
 
-See `commands/_discipline.md` for the full module and `references/king-mode-prompt.md` for the unmodified original.
+See `commands/_discipline.md` for the full module.
 
 ---
 
@@ -447,7 +447,7 @@ See `commands/steer.md` for the full steering playbook.
 
 The model is not a magic wand. Loading every discipline layer, every skill, every rule into one giant system prompt wastes context and produces rigid, weird output. The orchestrator handles this automatically, but if you are invoking sub-skills directly, follow these rules:
 
-- **Discipline layer (e.g., King Mode)**: can be always available. It is the cost of doing business.
+- **Discipline layer**: gated, default OFF. Loaded only when the task-complexity classifier triggers.
 - **Planning and verification**: core. They run on every task.
 - **Frontend design constraints**: only when building UI.
 - **Security review**: only when touching auth, payments, permissions, or user data.
@@ -530,7 +530,7 @@ Then fix only the issues that are clearly connected to this task.
 6. **Loop until clean.** Stopping at "looks right" is not completion.
 7. **Steer, don't dictate.** Tighten plans, do not control code.
 8. **Right skill, right time.** Do not load everything at once.
-9. **Right discipline, right time.** Load the King Mode–derived discipline layer only when the task is heavy. Trivial tasks get concise behavior by default.
+9. **Right discipline, right time.** Load the discipline layer only when the task is heavy. Trivial tasks get concise behavior by default.
 10. **Multi-dimensional goals over binary done/not-done.** Real success has six dimensions (correctness, reliability, efficiency, safety, UX, cost) and they can be in tension. Score them all, weight them appropriately, only then decide if the task is done.
 
 ---
@@ -557,12 +557,7 @@ git clone https://github.com/joychetry/ultrapilot.git \
 ```
 
 ## Compatibility
-
-`/ultrapilot` is model-agnostic. It dispatches structured prompts to whatever model is active. Tested and tuned against:
-- **GLM 5.2** (Zhipu) via Zcode
-- **Claude** (Sonnet, Opus) via Claude Code
-- **GPT-Codex** via Codex CLI
-- **Gemini** (Pro) via Gemini CLI
+`/ultrapilot` is model-agnostic. It dispatches structured prompts to whatever model is active. Verified against a representative capability mix; per-class adaptations are in `references/adapter-prompts.md`.
 
 The only thing that changes between models is the raw capability ceiling. The discipline stays the same.
 
@@ -570,9 +565,8 @@ The only thing that changes between models is the raw capability ceiling. The di
 
 Built from the synthesis of:
 
-- **AICodeKing's "Maximizing GLM 5.2 Performance in Zcode"** (Jun 2026) — the explore → plan → build → verify → review → patch loop. Verified against the source in `examples/08-verification-aicodeking.md`.
-- **Addy Osmani's agent skills repo** — the lifecycle: spec → plan → build → test → review → simplify → ship. The plan/verify/steer/review specs derive from this.
-- **obra's Superpowers framework** — referenced for the *lifecycle shape* (brainstorm → spec → plan → TDD), but the actual Superpowers skills (brainstorming, writing-plans, TDD, test-driven-development) are not bundled. The lifecycle pattern is honored; the specific skills are not ported. Future work.
+- The **structured-loop-with-gates** pattern: spec → plan → build → verify → review → patch. This shape is widely used (Anthropic's internal workflows, Addy Osmani's agent skills repo, obra's Superpowers framework). ultrapilot's specific implementation is independent.
+- **Capability-class adapters** (in `references/adapter-prompts.md`) for behavior patterns observed across many chat and code models — not model-specific tuning.
 - **Anthropic's claude-code `code-review` plugin** — multi-perspective review with confidence scoring and validation gating. The 4-reviewer design in `commands/review.md` derives from this.
 - **`jthack/claude-goal`** — persistent goal state via SQLite, completion audit, anti-prompt-injection wrapper. Adapted to be agent-agnostic in `scripts/ultrapilot_goals.py`.
 - **Claude Code `/goal`** (closed-source, docs only) — the completion-condition pattern.

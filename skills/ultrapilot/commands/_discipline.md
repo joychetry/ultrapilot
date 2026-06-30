@@ -1,22 +1,21 @@
 ---
 name: ultrapilot-discipline
-description: "/ultrapilot:_discipline — Internal discipline module. Generalized form of AICodeKing's King Mode prompt. The orchestrator loads it ONLY when the task-complexity classifier decides the task is heavy. Default: OFF."
+description: "/ultrapilot:_discipline — Internal discipline module. Loaded by the orchestrator ONLY when the task-complexity classifier decides the task is heavy. Default: OFF. The module is model-agnostic: it adds a thinking layer (multi-lens analysis, project-discipline, anti-fluff response format) without referencing any specific model."
 license: MIT
 allowed-tools: Read
 metadata:
-  author: joychetry (derived from AICodeKing's King Mode)
+  author: joychetry
   version: "1.0"
   category: software-development
   parent: ultrapilot
   internal: true
-  derived_from: "https://github.com/aicodeking/yt-tutorial/blob/main/gemini-king-mode.md"
 ---
 
 # /ultrapilot:_discipline
 
-**Internal discipline module. Generalized form of AICodeKing's King Mode.**
+**Internal discipline module. Model-agnostic thinking layer.**
 
-The orchestrator loads this module only when the task-complexity classifier determines the task is heavy. **Default: OFF.** Loading discipline for trivial tasks wastes quota — this is AICodeKing's own advice from the source video:
+The orchestrator loads this module only when the task-complexity classifier determines the task is heavy. **Default: OFF.** Loading discipline for trivial tasks wastes quota:
 
 > "If you want to rename a button, just ask it to rename the button. If you use deep reasoning on every small edit, you waste quota and make the model overcomplicate things."
 
@@ -62,7 +61,7 @@ else:
     default = load discipline (when in doubt, load it)
 ```
 
-The "default = load when in doubt" rule matches AICodeKing's advice: "If it does, plan properly. If it does not, do the small edit and move on." When the classifier is uncertain, lean toward loading.
+The "default = load when in doubt" rule is deliberate: when the classifier is uncertain, lean toward loading.
 
 ---
 
@@ -139,8 +138,6 @@ When ULTRATHINK is active:
 - The activation behavior of the `ULTRATHINK` trigger: honored throughout the run
 
 ## Why the gate matters
-
-The source video explicitly warns:
 
 > "Do not use Ultra Think for tiny changes. If you want to rename a button, just ask it to rename the button. If you use deep reasoning on every small edit, you waste quota and make the model overcomplicate things."
 
@@ -249,14 +246,7 @@ If discipline is being loaded too rarely (the model is shallow on heavy tasks), 
 - Lower the file count threshold (e.g., 2 instead of 3)
 - Default to loading when the classifier is uncertain (already the case)
 
-## Source & Attribution
-
-- **Original prompt:** AICodeKing's "King Mode" — [aicodeking/yt-tutorial/gemini-king-mode.md](https://github.com/aicodeking/yt-tutorial/blob/main/gemini-king-mode.md)
-- **First surfaced in:** [GLM-5 KING MODE video (Feb 2026)](https://www.youtube.com/watch?v=JRuwxLNXfcY)
-- **Used in ultrapilot as:** Generalized for model-agnostic use, gated by complexity classifier, default-off
-
 ## Related
 
-- `references/king-mode-prompt.md` — the unmodified original prompt, archived for reference
 - `/ultrapilot` — main orchestrator
 - `/ultrapilot:plan` — plan phase output also feeds the gate (plan length = scope signal)

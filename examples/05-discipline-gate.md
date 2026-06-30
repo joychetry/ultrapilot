@@ -1,12 +1,12 @@
 ---
 name: example-discipline-gate
-description: "Worked example — discipline activation gate decisions across five different task profiles, showing when the King Mode-derived layer is loaded and when it is not."
+description: "Worked example — discipline activation gate decisions across five different task profiles, showing when the discipline layer is loaded and when it is not."
 type: example
 ---
 
 # Example 05: Discipline Activation Gate
 
-Five task profiles showing the discipline gate in action. The gate decides whether to load `/ultrapilot:_discipline` (generalized King Mode) or use the default concise behavior.
+Five task profiles showing the discipline gate in action. The gate decides whether to load `/ultrapilot:_discipline` or use the default concise behavior.
 
 ---
 
@@ -35,7 +35,7 @@ Five task profiles showing the discipline gate in action. The gate decides wheth
 
 **Decision:** **Discipline OFF.** Default concise behavior.
 
-**Why:** AICodeKing's own advice — "If you want to rename a button, just ask it to rename the button. If you use deep reasoning on every small edit, you waste quota and make the model overcomplicate things."
+**Why:** the discipline gate's own rule — "If you want to rename a button, just ask it to rename the button. If you use deep reasoning on every small edit, you waste quota and make the model overcomplicate things."
 
 The orchestrator dispatches the build command. The model renames the button. Verification confirms the change. Done in 1 turn.
 

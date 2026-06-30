@@ -41,7 +41,7 @@ Each command file in `commands/` is a self-contained slash command spec with:
 1. Edit the relevant file in `commands/`.
 2. Update the phase section in `SKILL.md` if the change affects the orchestrator's flow.
 3. Add a CHANGELOG entry under `[Unreleased]`.
-4. Test against at least two different models (recommended: Claude + GLM or Claude + Gemini).
+4. Test against at least two different models (a strong hosted model and one capability-class representative is a good baseline).
 5. Open a PR.
 
 ## Adding a new reference doc
@@ -81,7 +81,7 @@ Before opening a PR, test against:
 - [ ] A bug fix that touches one file
 - [ ] A refactor that touches many files
 - [ ] A greenfield project (no existing code)
-- [ ] At least one non-Claude model if possible (GLM, Gemini, or local)
+- [ ] At least one non-default-class model if possible (local, small-context, or text-only)
 
 ## Review process
 

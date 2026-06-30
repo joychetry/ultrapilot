@@ -31,7 +31,7 @@ What actually happened. Include the full error output, stack trace, or log.
 - ultrapilot version: [e.g. 1.0.0]
 - Agent: [Claude Code, Codex, Droid, etc.]
 - Agent version: [e.g. Claude Code 2.1.139]
-- Model: [e.g. Claude Sonnet 4, GLM 5.2]
+- Model: [e.g. the model you're using — name + version]
 - OS: [e.g. macOS 15, Ubuntu 22.04]
 - Python: [e.g. 3.11]
 
