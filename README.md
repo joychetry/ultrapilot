@@ -21,7 +21,10 @@
 | **4. Verify** | Run tests, type checks, lint, browser checks | `/ultrapilot:verify` |
 | **5. Review** | Multi-perspective diff audit with validation gating | `/ultrapilot:review` |
 | **6. Patch** | Fix what the reviewer caught, loop back to verify | (built-in) |
+| **Steer** (mid-flight) | Tighten a vague plan without restarting | `/ultrapilot:steer` |
 | **Goal scoring** | Six-dimension weighted score (correctness, reliability, efficiency, safety, UX, cost) | `/ultrapilot:goals` |
+
+> `_discipline` is also shipped (`commands/_discipline.md`) but is **internal** — the orchestrator loads it automatically when tasks warrant it. Don't invoke it directly.
 
 The user types one command. The agent handles everything else via `scripts/ultrapilot_run.py`.
 
