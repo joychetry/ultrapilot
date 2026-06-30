@@ -1,23 +1,51 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-version-resolver:
-  major:
-    labels: ["breaking"]
-  minor:
-    labels: ["enhancement", "feature"]
-  patch:
-    labels: ["bug", "documentation", "dependencies"]
-  default: patch
+change-template: "* $TITLE (#$NUMBER) @$AUTHOR"
 categories:
   - title: "🚀 Features"
-    labels: ["enhancement", "feature"]
+    when:
+      labels:
+        - "enhancement"
+        - "feature"
   - title: "🐛 Bug Fixes"
-    labels: ["bug", "fix"]
+    when:
+      labels:
+        - "bug"
+        - "fix"
   - title: "📚 Documentation"
-    labels: ["documentation"]
+    when:
+      labels:
+        - "documentation"
   - title: "🔧 Maintenance"
-    labels: ["dependencies", "maintenance", "chore"]
-change-template: "* $TITLE (#$NUMBER) @$AUTHOR"
+    when:
+      labels:
+        - "dependencies"
+        - "maintenance"
+        - "chore"
+  - type: "version-resolver"
+    semver-increment: "major"
+    when:
+      label: "breaking"
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      label: "feature"
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      label: "enhancement"
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      label: "bug"
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      label: "documentation"
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      label: "dependencies"
 template: |
   ## Changes
 
