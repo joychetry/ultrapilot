@@ -1,0 +1,18 @@
+{
+  "name": "ultrapilot",
+  "description": "ultrapilot core skills library: single-command engineering orchestrator with state-machine-driven explore → plan → build → verify → review → patch → audit loop. Model-agnostic, token-optimized, multi-dimensional goal scoring.",
+  "owner": {
+    "name": "joychetry"
+  },
+  "plugins": [
+    {
+      "name": "ultrapilot",
+      "description": "Core skills library for Factory Droid: single-command engineering orchestrator with multi-dimensional goal scoring",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "joychetry"
+      }
+    }
+  ]
+}

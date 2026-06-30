@@ -1,0 +1,11 @@
+{
+  "name": "ultrapilot",
+  "version": "1.0.0",
+  "description": "Single-command engineering orchestrator with multi-dimensional goal scoring. Model-agnostic, token-optimized, state-machine-driven.",
+  "author": {
+    "name": "joychetry"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/joychetry/ultrapilot",
+  "repository": "https://github.com/joychetry/ultrapilot"
+}

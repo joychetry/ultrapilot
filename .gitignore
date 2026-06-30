@@ -1,0 +1,94 @@
+# --- Python ---
+# Bytecode / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+build/
+dist/
+*.whl
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache/
+
+# Type / lint
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.python-version
+
+# --- Editor / OS ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.Trash-*
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.orig
+*.tmp
+*.log
+*.local
+
+# --- Agent per-project state ---
+# (Created when a user opens this repo in a local agent. Never tracked.)
+.claude/
+.codex/
+.droid/
+.factory/
+.cursor/
+.continue/
+.aider*
+.aider.chat.history*
+.mcp_config*
+.mcp.json
+
+# --- Build / install artifacts ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Docs build output (future-proofing)
+docs/_build/
+site/
+
+# Distribution archives
+*.tar.gz
+*.zip
+
+# --- Local runtime state ---
+# ultrapilot state DB and related
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.ultrapilot/
+
+# --- Local overrides ---
+.env
+.env.local
+.env.*.local

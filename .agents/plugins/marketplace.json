@@ -1,0 +1,19 @@
+{
+  "name": "ultrapilot-marketplace",
+  "owner": {
+    "name": "joychetry"
+  },
+  "description": "ultrapilot — single-command engineering orchestrator with state-machine-driven explore → plan → build → verify → review → patch → audit loop. Model-agnostic, token-optimized, multi-dimensional goal scoring.",
+  "plugins": [
+    {
+      "name": "ultrapilot",
+      "source": {
+        "path": "./plugins/ultrapilot"
+      },
+      "interface": {
+        "displayName": "ultrapilot"
+      },
+      "description": "Single-command engineering orchestrator. Runs the full explore → plan → build → verify → review → patch → audit lifecycle with multi-dimensional goal scoring. Token-optimized via lazy phase loading. Model-agnostic."
+    }
+  ]
+}

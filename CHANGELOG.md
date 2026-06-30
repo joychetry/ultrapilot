@@ -1,0 +1,122 @@
+# Changelog
+
+All notable changes to `/ultrapilot` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [1.0.0] - 2026-06-30
+
+First public release. This is the initial version published to all supported marketplaces (agentskills.io, Claude Code, Droid, Codex).
+
+### What's in this release
+
+`/ultrapilot` is a single-command engineering orchestrator that runs a full `explore → plan → build → verify → review → patch` lifecycle with multi-dimensional goal scoring. It is **model-agnostic** (works with GLM 5.2, Claude, Codex, Gemini, and any LLM coding tool) and **token-optimized** via lazy phase loading — a full 7-phase run costs ~2,000 tokens, down from ~22,000 if all specs were loaded up front.
+
+The orchestrator's loop is:
+
+1. Set a goal once: `ultrapilot_goals.py set "[task]"`
+2. Loop: `ultrapilot_run.py next` → do the work → `ultrapilot_run.py report` → repeat
+3. The runner enforces phase order; the agent cannot skip phases without an explicit `goto`
+
+### Core components
+
+- **State engine** (`scripts/ultrapilot_goals.py`): dependency-free Python, single SQLite file, no agent-specific runtime
+- **State-machine runner** (`scripts/ultrapilot_run.py`): the actual control flow, with token-aware verbosity (compact / minimal)
+- **Phase prompts** (`prompts/<phase>.md`): 200-500 tokens each, lazy-loaded on demand
+- **Companion commands** (`commands/`): `/ultrapilot:explore`, `:plan`, `:build`, `:verify`, `:review`, `:steer`, `:goals`, `:_discipline` — each a `goto` shortcut to a phase
+- **Worked examples** (`examples/01`–`08`): real task types (feature add, auth migration, bug fix, rigorous review, discipline gate, goal profiles, efficient loop, verification audit)
+
+### Goal system (Phase 0)
+
+Multi-dimensional success criteria with six dimensions and weights:
+
+- Correctness (30%), Reliability (20%), Efficiency (10%), Safety (25%), UX (10%), Cost (5%)
+- Six preset profiles: `default`, `perf`, `secure`, `ship-it`, `prototype`, `infra`
+- Custom weights: `--weights correctness=40,safety=40`
+- Per-dimension floors (safety ≥ 60%, correctness ≥ 70%) as non-negotiable minimums
+- Trial-based stability: `--trials N` for non-deterministic tasks
+- Three grader types: code-based, model-based, human
+- Two-level evaluation: single-step (decision) + end-to-end (workflow)
+- Conflict-resolution priority: safety > correctness > reliability > efficiency > UX > cost
+
+### Discipline layer (gated, default OFF)
+
+`/ultrapilot:_discipline` is a generalized form of AICodeKing's King Mode prompt. The orchestrator loads it only when the task-complexity classifier decides the task is heavy.
+
+- **8 heuristic triggers** (file count, line count, abstractions, cross-cutting changes, etc.)
+- **3 explicit triggers** (`ULTRATHINK` keyword, `--deep` flag, `--hard`/`--deep` aliases)
+- **Override flags**: `--quick` and `--trivial` to force discipline OFF
+- **ULTRATHINK mode** for deep-reasoning response format, toggleable mid-run (`ULTRATHINK OFF` to exit)
+- The original King Mode prompt is archived at `references/king-mode-prompt.md` with attribution
+
+### Review system (v2)
+
+Multi-perspective review with independent validation gating:
+
+- Four parallel reviewers: convention compliance × 2, bug detection diff-only, bug detection context-aware
+- Pre-flight check (short-circuits on closed/draft/auto/already-reviewed PRs)
+- Project convention discovery (AGENTS.md / CLAUDE.md / equivalents) as a review input
+- Validation pass for every candidate issue with confidence scoring
+- High-signal filter with explicit "flag these / do not flag these" lists
+- `--pr` and `--comment` flags for review command
+- Inline comment posting with committable suggestion blocks (small fixes) vs description (large fixes)
+
+### Token efficiency
+
+| Design | Per-run prompt cost | Reduction |
+|--------|---------------------|-----------|
+| Naive (all specs loaded) | ~22,000 tokens | — |
+| v1.0 compact (lazy phase loading) | ~2,000 tokens | 91% |
+| v1.0 minimal (low-budget mode) | ~500 tokens | 98% |
+
+### Agent support
+
+`/ultrapilot` is **agent-agnostic** and works with any LLM coding tool that can call subprocesses and read files. The session-ID resolver detects:
+
+- Claude Code
+- Codex
+- Gemini CLI
+- Cursor
+- Aider
+- Continue
+- OpenCode
+- Hermes
+
+Detection is via environment variables only — no agent runtime APIs, no agent-specific hooks. The same `ultrapilot_goals.py` and `ultrapilot_run.py` work everywhere.
+
+### Companion commands (stable, will not change without a major version bump)
+
+- `/ultrapilot:explore` — read-only architecture mapping
+- `/ultrapilot:plan` — scoped plan with acceptance criteria
+- `/ultrapilot:build` — small-step execution with checkpoints
+- `/ultrapilot:verify` — actual checks (tests, type, lint, browser)
+- `/ultrapilot:review` — multi-perspective audit with validation
+- `/ultrapilot:steer` — mid-flight intervention
+- `/ultrapilot:goals` — multi-dimensional goal management
+- `/ultrapilot:_discipline` — internal discipline module (gated, rarely invoked directly)
+
+### Source & inspiration
+
+- **AICodeKing's King Mode** ([video](https://www.youtube.com/watch?v=JRuwxLNXfcY), [GitHub](https://github.com/aicodeking)) — the discipline layer and "right tool for the task" framing
+- **Addy Osmani's [agent skills repo](https://github.com/addyosmani/agent-skills)** — the lifecycle shape (spec → plan → build → test → review → simplify → ship); specific skills from that repo are not bundled, only the lifecycle pattern is honored
+- **Anthropic's [claude-code code-review plugin](https://github.com/anthropics/claude-code/blob/main/plugins/code-review/commands/code-review.md)** — multi-agent review with confidence scoring
+- **[jthack/claude-goal](https://github.com/jthack/claude-goal)** — SQLite state, completion audit, anti-prompt-injection patterns
+- **[Braintrust: Agent Evaluation](https://www.braintrust.dev/articles/agent-evaluation)** — multi-dimensional scoring, three grader types, two-level evaluation
+- **[Brenndoerfer: Setting Goals and Success Criteria](https://mbrenndoerfer.com/writing/setting-goals-and-success-criteria-ai-agent-evaluation)** — success-criteria taxonomy
+- **GStack** ([garrytan/gstack](https://github.com/garrytan/gstack)) — `/autoplan` scope modes, auto-decision principles
+- **Anthropic Claude Code `/goal`** (closed-source, [docs only](https://code.claude.com/docs/en/goal)) — completion-condition pattern
+
+### Verification
+
+`/ultrapilot` was audited against AICodeKing's source material before release. The full audit is in `examples/08-verification-aicodeking.md`. Two real gaps were found and fixed:
+
+1. **Tools the agent must bring** — Context 7, web reader, Playwright are expected but not provided. This is now stated explicitly in SKILL.md.
+2. **Build-phase conservatism** — ultrapilot is more conservative than AICodeKing's source. The reasoning and the override are documented in `prompts/build.md`.
+
+### Install
+
+See [README.md](README.md) for marketplace install instructions (Claude Code, Droid, Codex, agentskills.io, or standalone).
+
+### Notes
+
+- First public release. API is the slash command surface plus the SKILL.md spec.
+- Companion commands are stable. Breaking changes will bump major version.
+- MIT license.

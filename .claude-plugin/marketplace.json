@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "ultrapilot-marketplace",
+  "owner": {
+    "name": "joychetry"
+  },
+  "description": "ultrapilot — single-command engineering orchestrator with state-machine-driven explore → plan → build → verify → review → patch → audit loop. Model-agnostic, token-optimized, multi-dimensional goal scoring.",
+  "version": "1.0.0",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "ultrapilot",
+      "source": "./plugins/ultrapilot",
+      "description": "Single-command engineering orchestrator. Runs the full explore → plan → build → verify → review → patch → audit lifecycle with multi-dimensional goal scoring. Token-optimized via lazy phase loading. Model-agnostic.",
+      "version": "1.0.0",
+      "author": {
+        "name": "joychetry"
+      },
+      "homepage": "https://github.com/joychetry/ultrapilot",
+      "repository": "https://github.com/joychetry/ultrapilot",
+      "license": "MIT",
+      "keywords": [
+        "orchestrator",
+        "workflow",
+        "coding-agent",
+        "tdd",
+        "planning",
+        "verification",
+        "model-agnostic",
+        "state-machine",
+        "token-efficient",
+        "ai",
+        "engineering"
+      ],
+      "category": "development",
+      "tags": [
+        "orchestrator",
+        "workflow",
+        "ai-engineering",
+        "coding-agents"
+      ]
+    }
+  ]
+}

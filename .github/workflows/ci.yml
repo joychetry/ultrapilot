@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    name: Smoke test (script runtime)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Smoke test (goal set + status + completion audit)
+        run: |
+          set -e
+          # 1. Set a goal
+          python3 scripts/ultrapilot_goals.py set --profile secure --tokens 250K "ci smoke test goal"
+
+          # 2. Status
+          python3 scripts/ultrapilot_goals.py status
+
+          # 3. Score computation (the most important part of the goal system)
+          python3 scripts/ultrapilot_goals.py score \
+            --weights '{"correctness":30,"reliability":20,"efficiency":10,"safety":25,"ux":10,"cost":5}' \
+            --scores '{"correctness":95,"reliability":78,"efficiency":85,"safety":82,"ux":88,"cost":92}'
+
+          # 4. Get the next phase prompt (the runner)
+          python3 scripts/ultrapilot_run.py next | head -5
+
+          # 5. Status of the runner
+          python3 scripts/ultrapilot_run.py status | head -10
+
+      - name: Validate JSON manifests
+        run: |
+          for f in .claude-plugin/marketplace.json .codex-plugin/plugin.json .factory-plugin/plugin.json .factory-plugin/marketplace.json .agents/plugins/marketplace.json; do
+            echo "Validating $f"
+            python3 -c "import json; json.load(open('$f'))" || (echo "Invalid JSON: $f" && exit 1)
+          done
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          python3 - <<'PY'
+          import re, sys
+          text = open('SKILL.md').read()
+          m = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+          if not m:
+              print("SKILL.md has no frontmatter")
+              sys.exit(1)
+          fm = m.group(1)
+          if 'name: ultrapilot' not in fm:
+              print("SKILL.md frontmatter missing 'name: ultrapilot'")
+              sys.exit(1)
+          if 'description:' not in fm:
+              print("SKILL.md frontmatter missing 'description:'")
+              sys.exit(1)
+          # Extract description and check length
+          m2 = re.search(r'description:\s*(.+)', fm)
+          if m2:
+              d = m2.group(1).strip().strip('"').strip("'")
+              if len(d) > 1024:
+                  print(f"description too long: {len(d)} chars (max 1024)")
+                  sys.exit(1)
+          print("SKILL.md frontmatter OK")
+          PY
+
+  duplication-sync:
+    name: Check duplication sync (top-level vs plugin layout)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that top-level and skills/ultrapilot/ copies are in sync
+        run: |
+          # Top-level layout (agentskills.io + Codex open spec) must mirror
+          # the plugin layout (Claude Code / Droid / Codex marketplace) so
+          # both install paths see the same skill.
+          python3 - <<'PY'
+          import os, sys
+
+          pairs = [
+              ('SKILL.md',                       'skills/ultrapilot/SKILL.md'),
+              ('commands/_discipline.md',        'skills/ultrapilot/commands/_discipline.md'),
+              ('commands/build.md',              'skills/ultrapilot/commands/build.md'),
+              ('commands/explore.md',            'skills/ultrapilot/commands/explore.md'),
+              ('commands/goals.md',              'skills/ultrapilot/commands/goals.md'),
+              ('commands/plan.md',               'skills/ultrapilot/commands/plan.md'),
+              ('commands/review.md',             'skills/ultrapilot/commands/review.md'),
+              ('commands/steer.md',              'skills/ultrapilot/commands/steer.md'),
+              ('commands/verify.md',             'skills/ultrapilot/commands/verify.md'),
+              ('prompts/audit.md',               'skills/ultrapilot/prompts/audit.md'),
+              ('prompts/build.md',               'skills/ultrapilot/prompts/build.md'),
+              ('prompts/explore.md',             'skills/ultrapilot/prompts/explore.md'),
+              ('prompts/patch.md',               'skills/ultrapilot/prompts/patch.md'),
+              ('prompts/plan.md',                'skills/ultrapilot/prompts/plan.md'),
+              ('prompts/review.md',              'skills/ultrapilot/prompts/review.md'),
+              ('prompts/verify.md',              'skills/ultrapilot/prompts/verify.md'),
+              ('references/king-mode-prompt.md', 'skills/ultrapilot/references/king-mode-prompt.md'),
+              ('scripts/ultrapilot_goals.py',    'skills/ultrapilot/scripts/ultrapilot_goals.py'),
+              ('scripts/ultrapilot_run.py',      'skills/ultrapilot/scripts/ultrapilot_run.py'),
+          ]
+
+          failed = []
+          for a, b in pairs:
+              if not os.path.exists(a):
+                  print(f"  MISSING top-level: {a}")
+                  failed.append(a)
+                  continue
+              if not os.path.exists(b):
+                  print(f"  MISSING plugin copy: {b}")
+                  failed.append(b)
+                  continue
+              with open(a, 'rb') as f1, open(b, 'rb') as f2:
+                  if f1.read() != f2.read():
+                      print(f"  DRIFT: {a} != {b}")
+                      failed.append(a)
+
+          if failed:
+              print(f"\n{len(failed)} file(s) out of sync. Fix by mirroring edits:")
+              for f in failed:
+                  other = f.replace('skills/ultrapilot/', '') if 'skills/ultrapilot/' in f else f'skills/ultrapilot/{f}'
+                  print(f"  cp {f} {other}")
+              sys.exit(1)
+          else:
+              print(f"  OK - {len(pairs)} duplicate file pairs in sync")
+          PY
+
+  changelog-version:
+    name: Check CHANGELOG.md top version matches manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from CHANGELOG.md and manifests, compare
+        run: |
+          python3 - <<'PY'
+          import json, re, sys, os
+
+          # Latest non-Unreleased version from CHANGELOG.md
+          with open('CHANGELOG.md') as f:
+              cl = f.read()
+          versions = re.findall(r'##\s*\[(\d+\.\d+\.\d+)\]', cl)
+          if not versions:
+              print("CHANGELOG.md has no [X.Y.Z] versioned entry")
+              sys.exit(1)
+          cl_version = versions[0]
+          print(f"  CHANGELOG.md latest: {cl_version}")
+
+          # Versions from all JSON manifests
+          manifest_versions = set()
+          for root, dirs, files in os.walk('.'):
+              if '.git' in dirs:
+                  dirs.remove('.git')
+              for fn in files:
+                  if fn.endswith('.json') and 'plugin.json' in fn or fn == 'marketplace.json':
+                      p = os.path.join(root, fn)
+                      try:
+                          d = json.load(open(p))
+                      except Exception:
+                          continue
+                      v = d.get('version')
+                      if v:
+                          manifest_versions.add((p, v))
+                      for plug in d.get('plugins', []):
+                          v = plug.get('version')
+                          if v:
+                              manifest_versions.add((p + ' (plugin)', v))
+
+          bad = [(p, v) for p, v in manifest_versions if v != cl_version]
+          if bad:
+              print(f"\n  Manifest versions don't match CHANGELOG.md {cl_version}:")
+              for p, v in bad:
+                  print(f"    {p}: {v}")
+              sys.exit(1)
+
+          print(f"  OK - all {len(manifest_versions)} manifest version(s) match CHANGELOG.md")
+          PY

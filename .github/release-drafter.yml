@@ -1,0 +1,25 @@
+release-drafter:
+  - name: Default
+    tag-template: "v$RESOLVED_VERSION"
+    name-template: "v$RESOLVED_VERSION"
+    version-resolver:
+      major:
+        labels: ["breaking"]
+      minor:
+        labels: ["enhancement", "feature"]
+      patch:
+        labels: ["bug", "documentation", "dependencies"]
+      default: patch
+    categories:
+      - title: "🚀 Features"
+        labels: ["enhancement", "feature"]
+      - title: "🐛 Bug Fixes"
+        labels: ["bug", "fix"]
+      - title: "📚 Documentation"
+        labels: ["documentation"]
+      - title: "🔧 Maintenance"
+        labels: ["dependencies", "maintenance", "chore"]
+    template: |
+      ## Changes
+
+      $CHANGES
