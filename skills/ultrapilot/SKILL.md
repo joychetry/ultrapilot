@@ -603,7 +603,12 @@ ultrapilot is a pure-standards SKILL.md plugin — any LLM tool that reads the
 `bin/` wrappers are the only filesystem-level assumption, and they're optional
 (you can call `scripts/ultrapilot_run.py` directly).
 
-<!-- HERMES_FOOTNOTE_BEGIN: Mirror of /SKILL.md's footnote. See that file. -->
+<!-- HERMES_FOOTNOTE_BEGIN: The blockquote below is the ONLY allowed place
+     a ~/.hermes/ path may appear in user-facing docs. It documents the
+     install path for Hermes users and is consumed by the no-hermes-paths
+     CI check, which skips any '>'-prefixed line between this marker and
+     the matching HERMES_FOOTNOTE_END below. Do not remove these markers
+     without also updating .github/workflows/ci.yml. -->
 > **Note for Hermes users:** ultrapilot also works inside Hermes via the agent's
 > native skills loader. Install location: `~/.hermes/skills/ultrapilot`. The
 > `bin/` wrappers handle this path automatically.

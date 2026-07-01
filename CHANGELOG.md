@@ -5,7 +5,7 @@ All notable changes to `/ultrapilot` are documented here. The format follows [Ke
 ## [Unreleased]
 
 ### Changed
-- **Public-readiness hardening.** ultrapilot is now genuinely agent-agnostic from the user's perspective. The previous release shipped a `python3 ~/.hermes/skills/ultrapilot/...` invocation pattern that worked on the author's machine (Hermes) but silently broke on Claude Code, Droid, and Codex installs. This release replaces every hardcoded per-agent path with the new `bin/ultrapilot-run` / `bin/ultrapilot-goals` shell wrappers, which auto-resolve the install location via `ULTRAPILOT_HOME` or any of the conventional per-agent skills directories.
+- **Public-readiness hardening.** ultrapilot is now genuinely agent-agnostic from the user's perspective. The previous release shipped a hardcoded per-agent invocation pattern (the form `python3 <agent-home>/skills/ultrapilot/scripts/...`) that worked on the author's internal Hermes install but silently broke on Claude Code, Droid, and Codex. This release replaces every hardcoded per-agent path with the new `bin/ultrapilot-run` / `bin/ultrapilot-goals` shell wrappers, which auto-resolve the install location via `ULTRAPILOT_HOME` or any of the conventional per-agent skills directories.
 
 ### Added
 - `bin/ultrapilot-run` and `bin/ultrapilot-goals`: thin shell wrappers that resolve the install path across all supported agents (Claude Code, Droid, Codex, Hermes, custom `ULTRAPILOT_HOME`).
