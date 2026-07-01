@@ -295,15 +295,23 @@ jobs:
           # each of the conventional per-agent paths, with a clean $HOME that
           # has NO ~/.hermes/ symlink. This proves a Claude Code / Droid / Codex
           # user (without Hermes) can install and run ultrapilot out of the box.
+          # Ignore cp errors (some .git/objects may be unreadable on the CI
+          # runner; we don't need .git to test the wrappers).
+          # We use `ultrapilot-run --help` (which exits 0) rather than bare
+          # `ultrapilot-run` (which exits 2 because it requires a subcommand).
           for AGENT_HOME in .claude .factory .codex; do
-            rm -rf "/tmp/ultrapilot-test-$AGENT_HOME"
-            mkdir -p "/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot"
-            cp -r . "/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/"
-            export PATH="/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/bin:$PATH"
-            env -i HOME="/tmp/ultrapilot-test-$AGENT_HOME" \
-                   PATH="/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/bin:/usr/bin:/bin" \
-                   sh -c "ultrapilot-run >/dev/null 2>&1 && ultrapilot-goals >/dev/null 2>&1" \
-              && echo "  OK - $AGENT_HOME install path works" \
-              || (echo "  FAIL - $AGENT_HOME install path broken" && exit 1)
-            rm -rf "/tmp/ultrapilot-test-$AGENT_HOME"
+            TEST_HOME="/tmp/ultrapilot-test"
+            INSTALL_DIR="$TEST_HOME/$AGENT_HOME/skills/ultrapilot"
+            rm -rf "$TEST_HOME"
+            mkdir -p "$INSTALL_DIR"
+            cp -r . "$INSTALL_DIR/" 2>/dev/null || true
+            if env -i HOME="$TEST_HOME" \
+                   PATH="$INSTALL_DIR/bin:/usr/bin:/bin" \
+                   sh -c "ultrapilot-run --help >/dev/null 2>&1 && ultrapilot-goals --help >/dev/null 2>&1"; then
+              echo "  OK - $AGENT_HOME install path works"
+            else
+              echo "  FAIL - $AGENT_HOME install path broken"
+              exit 1
+            fi
+            rm -rf "$TEST_HOME"
           done
