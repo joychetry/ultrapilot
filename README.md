@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-blueviolet)](https://agentskills.io)
+[![Pi](https://img.shields.io/badge/Pi-pi.dev-purple)](https://pi.dev)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-orange)](https://code.claude.com/docs/en/skills)
 [![Droid](https://img.shields.io/badge/Droid-plugin-blue)](https://docs.factory.ai/cli/configuration/plugins)
 [![Codex](https://img.shields.io/badge/Codex-plugin-green)](https://developers.openai.com/codex/skills)
@@ -66,7 +67,7 @@ ultrapilot-run report \
 > auto-resolve the install location via `ULTRAPILOT_HOME` or the conventional agent
 > skills directory.
 
-Works with **Claude Code, Codex, Gemini CLI, Cursor, Aider, Continue, OpenCode, Droid (Factory), or any LLM tool** that can run subprocess commands.
+Works with **Pi, Claude Code, Codex, Gemini CLI, Cursor, Aider, Continue, OpenCode, Droid (Factory), or any LLM tool** that can run subprocess commands.
 
 ## Install
 
@@ -105,6 +106,67 @@ npx codex-marketplace add joychetry/ultrapilot --plugins
 npx codex-marketplace add /path/to/ultrapilot --plugins
 ```
 
+### Pi (pi.dev)
+
+Pi has no marketplace — it scans the filesystem for Agent Skills spec–compliant
+`SKILL.md` files at startup. The standalone install below is the canonical path.
+
+```bash
+# Global install (Pi-specific location)
+git clone https://github.com/joychetry/ultrapilot.git ~/.pi/agent/skills/ultrapilot
+
+# OR: the universal location (works on Pi, Claude Code, and Codex)
+git clone https://github.com/joychetry/ultrapilot.git ~/.agents/skills/ultrapilot
+
+# Add the wrappers to your $PATH (pick the path you used above)
+export PATH="$HOME/.pi/agent/skills/ultrapilot/bin:$PATH"
+# or: export PATH="$HOME/.agents/skills/ultrapilot/bin:$PATH"
+```
+
+Then in any Pi session:
+
+```
+/skill:ultrapilot build a sponsorship dashboard
+```
+
+> **How Pi invokes the skill.** Pi auto-discovers `SKILL.md` files in
+> `~/.pi/agent/skills/`, `~/.agents/skills/`, and the project-local `.pi/skills/`
+> directory, and registers them as `/skill:<name>` commands. The skill name
+> `ultrapilot` is what gets shown in the system prompt and matched against your
+> request — Pi loads the full `SKILL.md` only when the description matches the
+> task, so token cost stays low. See [pi.dev/docs/latest/skills](https://pi.dev/docs/latest/skills)
+> for the full spec.
+
+**End-to-end loop on Pi** (the model invokes the wrappers via `bash` — same
+loop that runs on Claude Code / Droid / Codex):
+
+```bash
+# 1. Set the goal once
+ultrapilot-goals set --profile secure --tokens 250K "build a sponsorship dashboard"
+
+# 2. The model's loop (the agent runs these via its bash tool)
+ultrapilot-run next     # get the current phase prompt
+# ... do the work ...
+ultrapilot-run report --phase explore --result /tmp/explore-result.md --passed
+ultrapilot-run next     # advances to plan
+# ... loop until done ...
+```
+
+> The `bin/ultrapilot-run` and `bin/ultrapilot-goals` wrappers auto-resolve the
+> install location via `ULTRAPILOT_HOME` first, then `~/.pi/agent/skills/`,
+> `~/.agents/skills/`, and the Claude Code / Droid / Codex fallbacks. Set
+> `ULTRAPILOT_HOME` to override.
+
+**Project-local install (Pi only):** for ultrapilot available inside one
+project (and not globally):
+
+```bash
+cd /path/to/your/project
+git clone https://github.com/joychetry/ultrapilot.git .pi/skills/ultrapilot
+```
+
+> Project-local skills are only loaded after you run `/trust` for the project.
+
 ### Standalone (any agent)
 
 ```bash
@@ -114,6 +176,10 @@ ln -s "$(pwd)/ultrapilot" ~/.claude/skills/ultrapilot
 ln -s "$(pwd)/ultrapilot" ~/.factory/skills/ultrapilot
 # or
 ln -s "$(pwd)/ultrapilot" ~/.codex/skills/ultrapilot
+# or (Pi, pi.dev)
+ln -s "$(pwd)/ultrapilot" ~/.pi/agent/skills/ultrapilot
+# or (universal location — works on Pi, Claude Code, Codex)
+ln -s "$(pwd)/ultrapilot" ~/.agents/skills/ultrapilot
 ```
 
 The skill's runtime (`scripts/ultrapilot_goals.py` and `scripts/ultrapilot_run.py`) is dependency-free Python 3.8+ and works without any agent runtime.
