@@ -1,6 +1,6 @@
 ---
 name: ultrapilot
-description: "Single-command engineering orchestrator. Runs explore → plan → build → verify → review → patch → audit with multi-dimensional goal scoring. Token-optimized via lazy phase loading. Model-agnostic. Use when the user asks for a non-trivial build, refactor, migration, or feature with verifiable completion criteria."
+description: "Single-command engineering orchestrator. After loading, run `ultrapilot-goals set '<task>'` then loop `ultrapilot-run next` / do the work / `ultrapilot-run report --phase <name> --result <path> --passed`. Wrappers are in `<install>/bin/` — add to $PATH or call by absolute path. Runs explore → plan → build → verify → review → patch → audit with multi-dimensional goal scoring. Token-optimized via lazy phase loading. Model-agnostic. Use when the user asks for a non-trivial build, refactor, migration, or feature with verifiable completion criteria."
 license: MIT
 allowed-tools: "Bash Read Write Edit Grep Glob"
 metadata:
