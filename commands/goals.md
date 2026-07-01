@@ -411,8 +411,12 @@ The script auto-detects which coding agent is running and records the value in t
 | `aider` | `AIDER_MODEL` |
 | `continue` | `CONTINUE_GLOBAL_DIR` |
 | `opencode` | `OPENCODE_CONFIG` |
-| `hermes` | `HERMES_PROFILE` |
 | `unknown` | (none of the above) |
+
+> **Note:** the `hermes` agent ([Nous Research Hermes](https://hermes-agent.nousresearch.com))
+> is also supported and detected via `HERMES_PROFILE`. It is omitted from the primary table
+> because the public release targets the marketplace agents above; the detection logic in
+> `scripts/ultrapilot_goals.py` (the `AGENTS` registry) lists it explicitly.
 
 The detection is best-effort. Setting `--agent` on `set` overrides auto-detect. The `agent` field is informational — ultrapilot does not branch behavior on it.
 

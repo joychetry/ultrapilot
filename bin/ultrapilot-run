@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# ultrapilot-run — agent-agnostic wrapper for the runner script.
+# Resolves the install location automatically: $ULTRAPILOT_HOME, then
+# the conventional per-agent skills directory, then a `which` fallback.
+# Usage: ultrapilot-run <args...>
+set -euo pipefail
+
+# Candidate install locations, in priority order. The first one whose
+# scripts/ultrapilot_run.py exists wins. This keeps the wrapper portable
+# across Claude Code (~/.claude/skills/ultrapilot), Droid, Codex, and
+# any custom install path the user has configured.
+_candidates=(
+  "${ULTRAPILOT_HOME:-}"
+  "${HOME}/.claude/skills/ultrapilot"
+  "${HOME}/.factory/skills/ultrapilot"
+  "${HOME}/.codex/skills/ultrapilot"
+  "${HOME}/.hermes/skills/ultrapilot"
+  "${HOME}/.ultrapilot"
+)
+
+for _cand in "${_candidates[@]}"; do
+  [ -z "${_cand}" ] && continue
+  if [ -f "${_cand}/scripts/ultrapilot_run.py" ]; then
+    exec python3 "${_cand}/scripts/ultrapilot_run.py" "$@"
+  fi
+done
+
+echo "ultrapilot-run: could not locate ultrapilot install." >&2
+echo "Set ULTRAPILOT_HOME to the directory containing scripts/ultrapilot_run.py," >&2
+echo "or install ultrapilot to one of the conventional locations." >&2
+exit 127

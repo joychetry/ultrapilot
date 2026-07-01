@@ -801,7 +801,7 @@ Format:
 ## Step 5: Submit the audit to the script
 Run:
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py record-audit \\
+ultrapilot-goals record-audit \\
   --checklist '<the JSON array from step 2>' \\
   --missing  '<JSON array of blocker items>' \\
   --scores   '<the JSON object from step 4>' \\
@@ -815,7 +815,7 @@ phase (build, verify, or review) and address the missing items.
 
 ## Step 6: Mark complete (only if audit passed)
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py complete
+ultrapilot-goals complete
 ```
 
 Then report: final elapsed time, final token usage, and the audit summary.

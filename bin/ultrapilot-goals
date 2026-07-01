@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# ultrapilot-goals — agent-agnostic wrapper for the goals script.
+# See ultrapilot-run for resolution logic.
+# Usage: ultrapilot-goals <args...>
+set -euo pipefail
+
+_candidates=(
+  "${ULTRAPILOT_HOME:-}"
+  "${HOME}/.claude/skills/ultrapilot"
+  "${HOME}/.factory/skills/ultrapilot"
+  "${HOME}/.codex/skills/ultrapilot"
+  "${HOME}/.hermes/skills/ultrapilot"
+  "${HOME}/.ultrapilot"
+)
+
+for _cand in "${_candidates[@]}"; do
+  [ -z "${_cand}" ] && continue
+  if [ -f "${_cand}/scripts/ultrapilot_goals.py" ]; then
+    exec python3 "${_cand}/scripts/ultrapilot_goals.py" "$@"
+  fi
+done
+
+echo "ultrapilot-goals: could not locate ultrapilot install." >&2
+echo "Set ULTRAPILOT_HOME to the directory containing scripts/ultrapilot_goals.py," >&2
+echo "or install ultrapilot to one of the conventional locations." >&2
+exit 127

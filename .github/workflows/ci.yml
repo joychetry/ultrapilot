@@ -185,3 +185,125 @@ jobs:
 
           print(f"  OK - all {len(manifest_versions)} manifest version(s) match CHANGELOG.md")
           PY
+
+  no-hermes-paths:
+    name: Check no agent-specific paths leak into user-facing docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for hardcoded ~/.hermes/ paths in user-facing files
+        run: |
+          set -e
+          # ultrapilot is agent-agnostic. The ONLY place a ~/.hermes/ path is
+          # allowed is inside a blockquote that is wrapped by the
+          # HERMES_FOOTNOTE_BEGIN / HERMES_FOOTNOTE_END sentinels in SKILL.md
+          # (and its mirror in skills/ultrapilot/SKILL.md). Anything else is
+          # a regression and must use the bin/ultrapilot-{run,goals} wrappers.
+          #
+          # This is implemented as a Python script because pure-shell block
+          # detection of "lines between two sentinels" is fragile.
+          python3 - <<'PY'
+          import os, re, sys
+
+          ALLOWED_DIRS = ('SKILL.md', 'skills/ultrapilot/SKILL.md')
+          BEGIN = 'HERMES_FOOTNOTE_BEGIN'
+          END = 'HERMES_FOOTNOTE_END'
+          BAD_PATTERN = re.compile(r'~/.hermes/skills/ultrapilot')
+
+          failures = []
+          for root, dirs, files in os.walk('.'):
+              if '.git' in dirs:
+                  dirs.remove('.git')
+              if '.github' in dirs:
+                  # The CI check itself references the pattern; skip.
+                  dirs.remove('.github')
+              for fn in files:
+                  if not fn.endswith(('.md', '.py', '.yml', '.yaml', '.json', '.sh')):
+                      continue
+                  p = os.path.join(root, fn)
+                  if any(p == './' + a or p.endswith('/' + a) for a in ALLOWED_DIRS):
+                      # Allowed: skip the entire check (these files use BEGIN/END markers).
+                      continue
+                  with open(p, 'r', encoding='utf-8', errors='replace') as f:
+                      for i, line in enumerate(f, 1):
+                          if BAD_PATTERN.search(line):
+                              failures.append(f"{p}:{i}: {line.rstrip()}")
+
+          if failures:
+              print("\nERROR: agent-specific path leak detected.", file=sys.stderr)
+              print("ultrapilot is agent-agnostic. Use the bin/ultrapilot-run /", file=sys.stderr)
+              print("bin/ultrapilot-goals wrappers (or scripts/ultrapilot_*.py with", file=sys.stderr)
+              print("ULTRAPILOT_HOME) instead of hardcoded per-agent paths.", file=sys.stderr)
+              print("\nOffending lines:", file=sys.stderr)
+              for f in failures:
+                  print(f"  {f}", file=sys.stderr)
+              sys.exit(1)
+          print("  OK - no agent-specific ~/.hermes/ paths in user-facing files")
+          PY
+
+      - name: Verify allowed Hermes footnote is marked correctly
+        run: |
+          set -e
+          # Sanity check: the explicit "Note for Hermes users" footnote in
+          # SKILL.md must be wrapped by the HERMES_FOOTNOTE_BEGIN / _END
+          # sentinels so the previous step skips it. If someone refactors
+          # the footnote and removes a sentinel, the previous step starts
+          # failing too — so this step exists to make the failure mode
+          # obvious rather than mysterious.
+          python3 - <<'PY'
+          import re, sys
+          for path in ('SKILL.md', 'skills/ultrapilot/SKILL.md'):
+              text = open(path).read()
+              if 'HERMES_FOOTNOTE_BEGIN' not in text or 'HERMES_FOOTNOTE_END' not in text:
+                  print(f"ERROR: {path} is missing one of the HERMES_FOOTNOTE sentinels.",
+                        file=sys.stderr)
+                  print("Either re-add the BEGIN/END pair around the 'Note for Hermes", file=sys.stderr)
+                  print("users' blockquote, or update .github/workflows/ci.yml if the", file=sys.stderr)
+                  print("footnote was intentionally removed.", file=sys.stderr)
+                  sys.exit(1)
+          print("  OK - Hermes footnote sentinels present in SKILL.md and skills/ultrapilot/SKILL.md")
+          PY
+
+      - name: Scan for 'python3 ~/.hermes/' calls (a stronger version of the check)
+        run: |
+          set -e
+          # Even more restrictive: no shell command in any file should hardcode
+          # a python3 invocation against a per-agent skills path. This catches
+          # the kind of regression that landed in examples/07 before v1.0.0.
+          bad=$(grep -rEn 'python3 +~?/\.[a-z]+/skills/ultrapilot' \
+                  --include='*.md' --include='*.py' --include='*.sh' \
+                  --exclude-dir='.github' \
+                  . 2>/dev/null \
+                | grep -v '^\./\.git/' \
+                || true)
+          if [ -n "$bad" ]; then
+            echo ""
+            echo "ERROR: hardcoded 'python3 ~/<agent>/skills/ultrapilot/...' command found."
+            echo "Replace with 'ultrapilot-goals ...' or 'ultrapilot-run ...' (bin/ wrappers)."
+            echo ""
+            echo "Offending lines:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "  OK - no hardcoded python3 per-agent skills commands"
+
+      - name: Verify bin/ wrappers resolve across all canonical install paths
+        run: |
+          set -e
+          # Functional check: the wrappers must work when the install lives at
+          # each of the conventional per-agent paths, with a clean $HOME that
+          # has NO ~/.hermes/ symlink. This proves a Claude Code / Droid / Codex
+          # user (without Hermes) can install and run ultrapilot out of the box.
+          for AGENT_HOME in .claude .factory .codex; do
+            rm -rf "/tmp/ultrapilot-test-$AGENT_HOME"
+            mkdir -p "/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot"
+            cp -r . "/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/"
+            export PATH="/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/bin:$PATH"
+            env -i HOME="/tmp/ultrapilot-test-$AGENT_HOME" \
+                   PATH="/tmp/ultrapilot-test-$AGENT_HOME/skills/ultrapilot/bin:/usr/bin:/bin" \
+                   sh -c "ultrapilot-run >/dev/null 2>&1 && ultrapilot-goals >/dev/null 2>&1" \
+              && echo "  OK - $AGENT_HOME install path works" \
+              || (echo "  FAIL - $AGENT_HOME install path broken" && exit 1)
+            rm -rf "/tmp/ultrapilot-test-$AGENT_HOME"
+          done

@@ -304,7 +304,7 @@ def render_next(goal: Any, phase: str, prompt_data: dict[str, Any]) -> str:
         f"## When done, report back:",
         f"",
         f"```bash",
-        f"python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py report \\",
+        f"ultrapilot-run report \\",
         f"  --phase {phase} \\",
         f"  --result /tmp/{phase}-result.md \\",
         f"  --passed",

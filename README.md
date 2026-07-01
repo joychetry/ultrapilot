@@ -50,16 +50,21 @@ The orchestrator is **state-machine-driven**, not doc-driven. The agent calls `u
 
 ```bash
 # Set the goal (once)
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py set \
+ultrapilot-goals set \
   --profile secure --tokens 250K "[task]"
 
 # Loop until done
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next     # get phase prompt
+ultrapilot-run next     # get phase prompt
 # ... do the work ...
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py report \
+ultrapilot-run report \
   --phase <name> --result <path> --passed
 # ... repeat ...
 ```
+
+> **Prereq:** the `bin/` directory from the ultrapilot install must be on your `$PATH`
+> (or invoke the wrappers as `python3 <install>/bin/ultrapilot-run`, etc.). The wrappers
+> auto-resolve the install location via `ULTRAPILOT_HOME` or the conventional agent
+> skills directory.
 
 Works with **Claude Code, Codex, Gemini CLI, Cursor, Aider, Continue, OpenCode, Droid (Factory), or any LLM tool** that can run subprocess commands.
 

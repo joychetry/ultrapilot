@@ -12,7 +12,7 @@ The new ultrapilot loop is **state-machine driven**, **token-optimized**, and **
 
 ```bash
 # One goal, set once
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py set \
+ultrapilot-goals set \
   --profile secure \
   --tokens 250K \
   "build the sponsorship dashboard"
@@ -35,7 +35,7 @@ Goal #d8a3116c
 ## Turn 1: Get the explore phase prompt
 
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next
+ultrapilot-run next
 ```
 
 The agent sees **only the explore phase prompt** (200 tokens), not 2000+ lines of full spec:
@@ -73,7 +73,7 @@ When done, call: `ultrapilot_run.py report --phase explore --result /tmp/explore
 The agent reads the project, produces the architecture map, writes it to `/tmp/explore-result.txt`, then:
 
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py report \
+ultrapilot-run report \
   --phase explore \
   --result /tmp/explore-result.txt \
   --passed
@@ -89,7 +89,7 @@ Next phase: plan
 ## Turn 2: Get the plan phase prompt
 
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next
+ultrapilot-run next
 ```
 
 The agent sees **only the plan phase prompt** (250 tokens). The explore output is referenced by path, not re-included:
@@ -128,7 +128,7 @@ The agent reads the explore output from `/tmp/explore-result.txt` to inform the 
 ## Turn 3-4: Build
 
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next
+ultrapilot-run next
 ```
 
 The agent sees the build prompt (250 tokens), executes the plan's steps, writes the build summary, and reports.
@@ -289,10 +289,10 @@ Droid is fully supported as of v4:
 
 ```bash
 # Droid will auto-detect from $DROID_HOME or $FACTORY_API_KEY
-DROID_HOME=/Users/droid python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py set "..."
+DROID_HOME=/Users/droid ultrapilot-goals set "..."
 
 # Or invoke from droid exec:
-droid exec --auto medium "$(cat ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next)"
+droid exec --auto medium "$(ultrapilot-run next)"
 ```
 
 The runner is agent-agnostic — it works with Claude Code, Codex, Gemini CLI, Cursor, Aider, **Droid**, and any other LLM coding tool that can run subprocess commands.

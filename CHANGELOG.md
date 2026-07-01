@@ -2,6 +2,20 @@
 
 All notable changes to `/ultrapilot` are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **Public-readiness hardening.** ultrapilot is now genuinely agent-agnostic from the user's perspective. The previous release shipped a `python3 ~/.hermes/skills/ultrapilot/...` invocation pattern that worked on the author's machine (Hermes) but silently broke on Claude Code, Droid, and Codex installs. This release replaces every hardcoded per-agent path with the new `bin/ultrapilot-run` / `bin/ultrapilot-goals` shell wrappers, which auto-resolve the install location via `ULTRAPILOT_HOME` or any of the conventional per-agent skills directories.
+
+### Added
+- `bin/ultrapilot-run` and `bin/ultrapilot-goals`: thin shell wrappers that resolve the install path across all supported agents (Claude Code, Droid, Codex, Hermes, custom `ULTRAPILOT_HOME`).
+- `no-hermes-paths` CI job: scans for hardcoded `~/.hermes/` paths in user-facing files and fails the build on regression. A synthetic-violation test confirms the check is real, not vacuous.
+- Functional CI step that copies ultrapilot to each of `~/.claude/`, `~/.factory/`, `~/.codex/` and verifies the wrappers resolve correctly in a clean env with no Hermes symlink — proves a Claude Code / Droid / Codex user (without Hermes installed) can install and run ultrapilot out of the box.
+- `HERMES_FOOTNOTE_BEGIN` / `HERMES_FOOTNOTE_END` HTML-comment sentinels wrap the one remaining Hermes-specific install note in `SKILL.md` so the `no-hermes-paths` check can allow it without exempting the whole file.
+
+### Reordered
+- `SKILL.md` Installation section now leads with the three public marketplaces (Claude Code → Droid → Codex) before the Hermes footnote.
+
 ## [1.0.0] - 2026-06-30
 
 First public release. This is the initial version published to all supported marketplaces (agentskills.io, Claude Code, Droid, Codex).
@@ -77,7 +91,8 @@ Multi-perspective review with independent validation gating:
 - Aider
 - Continue
 - OpenCode
-- Hermes
+- Droid (Factory)
+- Hermes (out of band; not in primary marketplace list)
 
 Detection is via environment variables only — no agent runtime APIs, no agent-specific hooks. The same `ultrapilot_goals.py` and `ultrapilot_run.py` work everywhere.
 

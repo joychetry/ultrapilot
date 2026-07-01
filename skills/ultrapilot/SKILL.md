@@ -69,18 +69,23 @@ The agent's loop is simple:
 
 ```
 # Set the goal (if not already set)
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py set --profile secure --tokens 250K "[task]"
+ultrapilot-goals set --profile secure --tokens 250K "[task]"
 
 # Get the current phase prompt
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py next
+ultrapilot-run next
 
 # ... do the work the prompt describes ...
 
 # Report back
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_run.py report --phase <name> --result /tmp/<name>-result.md --passed
+ultrapilot-run report --phase <name> --result /tmp/<name>-result.md --passed
 
 # Repeat until done
 ```
+
+> The `ultrapilot-run` / `ultrapilot-goals` commands are thin shell wrappers from the
+> `bin/` directory; they auto-resolve the install path via `ULTRAPILOT_HOME` or the
+> conventional per-agent skills directory. Add `bin/` to your `$PATH`, or call the
+> wrappers with their absolute path.
 
 That's the entire loop. The script handles state, prompt sizing, and phase advancement.
 
@@ -537,24 +542,72 @@ Then fix only the issues that are clearly connected to this task.
 
 ## Installation
 
-Drop the `ultrapilot/` directory into your agent's skills directory.
+Choose the install method that matches how you use ultrapilot.
 
-For Hermes:
+### Marketplace install (recommended)
+
 ```bash
-cp -r ultrapilot/ ~/.hermes/skills/
+# Claude Code
+claude plugin install ultrapilot@ultrapilot-marketplace
+
+# Droid (Factory)
+droid plugin install ultrapilot@ultrapilot
+
+# Codex
+codex plugin install ultrapilot-marketplace
 ```
 
-For Claude Code (with plugins):
+### Manual install (from git)
+
 ```bash
-git clone https://github.com/joychetry/ultrapilot.git \
-  ~/.claude/plugins/ultrapilot/skills/ultrapilot
+git clone https://github.com/joychetry/ultrapilot.git
+cd ultrapilot
+
+# Claude Code
+mkdir -p ~/.claude/skills
+cp -r . ~/.claude/skills/ultrapilot/
+
+# Droid
+mkdir -p ~/.factory/skills
+cp -r . ~/.factory/skills/ultrapilot/
+
+# Codex
+mkdir -p ~/.codex/skills
+cp -r . ~/.codex/skills/ultrapilot/
 ```
 
-For Codex:
+Then add the wrappers to your shell `$PATH` (or invoke by absolute path):
+
 ```bash
-git clone https://github.com/joychetry/ultrapilot.git \
-  ~/.codex/skills/ultrapilot
+# Add to ~/.bashrc / ~/.zshrc
+export PATH="$HOME/.claude/skills/ultrapilot/bin:$PATH"
 ```
+
+> The `bin/ultrapilot-run` and `bin/ultrapilot-goals` wrappers auto-resolve the install
+> location by checking `ULTRAPILOT_HOME` first, then the conventional per-agent
+> directories, then a few common fallbacks. Set `ULTRAPILOT_HOME` to override.
+
+### One-line tarball install
+
+```bash
+curl -sL https://github.com/joychetry/ultrapilot/releases/latest/download/ultrapilot.tar.gz \
+  | tar -xz -C ~/.claude/skills/ && mv ~/.claude/skills/ultrapilot ~/.claude/skills/ultrapilot
+```
+
+(Substitute `~/.claude/skills/` for `~/.factory/skills/` or `~/.codex/skills/` per your agent.)
+
+### Other agents
+
+ultrapilot is a pure-standards SKILL.md plugin — any LLM tool that reads the
+[agentskills.io](https://agentskills.io) spec can load it without modification. The
+`bin/` wrappers are the only filesystem-level assumption, and they're optional
+(you can call `scripts/ultrapilot_run.py` directly).
+
+<!-- HERMES_FOOTNOTE_BEGIN: Mirror of /SKILL.md's footnote. See that file. -->
+> **Note for Hermes users:** ultrapilot also works inside Hermes via the agent's
+> native skills loader. Install location: `~/.hermes/skills/ultrapilot`. The
+> `bin/` wrappers handle this path automatically.
+<!-- HERMES_FOOTNOTE_END -->
 
 ## Compatibility
 `/ultrapilot` is model-agnostic. It dispatches structured prompts to whatever model is active. Verified against a representative capability mix; per-class adaptations are in `references/adapter-prompts.md`.

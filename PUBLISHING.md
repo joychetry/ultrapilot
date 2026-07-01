@@ -249,10 +249,13 @@ For users on agents that don't have a marketplace:
    ```
 3. Users can install manually:
    ```bash
-   # Claude Code / Hermes / generic
+   # Claude Code (default)
    tar -xzf ultrapilot-1.0.0.tar.gz -C ~/.claude/skills/
-   # or
-   tar -xzf ultrapilot-1.0.0.tar.gz -C ~/.hermes/skills/
+   # Droid
+   tar -xzf ultrapilot-1.0.0.tar.gz -C ~/.factory/skills/
+   # Codex
+   tar -xzf ultrapilot-1.0.0.tar.gz -C ~/.codex/skills/
+   # Other agents (Hermes, etc.) — substitute the relevant skills directory
    ```
 
 ## 7. Update the marketplaces after a release

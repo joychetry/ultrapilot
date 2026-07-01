@@ -57,7 +57,7 @@ List every deliverable with `status: FAIL` or `status: PARTIAL`. These are block
 ## Step 5: Submit the audit
 
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py record-audit \
+ultrapilot-goals record-audit \
   --checklist '<the JSON array from step 2>' \
   --missing  '<JSON array of blockers>' \
   --scores   '<the JSON object from step 4>' \
@@ -68,7 +68,7 @@ The script computes the aggregate, checks the floors, and returns pass/fail.
 
 ## Step 6: If the script returned `passed: true`
 ```bash
-python3 ~/.hermes/skills/ultrapilot/scripts/ultrapilot_goals.py complete
+ultrapilot-goals complete
 ```
 
 Otherwise: loop back to the relevant phase and address the blockers.
