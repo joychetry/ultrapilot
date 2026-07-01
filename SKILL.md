@@ -18,7 +18,7 @@ metadata:
     - model-agnostic
     - state-machine
     - token-efficient
-compatibility: "Requires Python 3.8+. Designed for Claude Code, Codex, Gemini CLI, Cursor, Aider, Continue, OpenCode, Droid (Factory), and any LLM tool that can run subprocess commands. Agent must bring its own web search, documentation fetcher (e.g. Context7), and browser/Playwright for UI verification."
+compatibility: "Requires Python 3.8+. Designed for Pi (pi.dev), Claude Code, Codex, Droid (Factory), Gemini CLI, Cursor, Aider, Continue, OpenCode, and any LLM tool that reads the Agent Skills spec and can run subprocess commands. Agent must bring its own web search, documentation fetcher (e.g. Context7), and browser/Playwright for UI verification."
 ---
 
 # /ultrapilot — The Discipline-Driven Engineering Orchestrator
@@ -542,9 +542,64 @@ Then fix only the issues that are clearly connected to this task.
 
 ## Installation
 
-Choose the install method that matches how you use ultrapilot.
+ultrapilot follows the [Agent Skills](https://agentskills.io) open standard,
+which means it works on **Pi, Claude Code, Codex, Droid, Cursor, Aider, OpenCode,
+Gemini CLI, and any LLM tool that implements the spec.** Install location
+differs per agent — pick the one that matches yours.
 
-### Marketplace install (recommended)
+### Quick install (per agent)
+
+```bash
+# Pi (pi.dev) — global
+git clone https://github.com/joychetry/ultrapilot.git ~/.pi/agent/skills/ultrapilot
+# Pi also accepts the universal ~/.agents/skills/ location:
+#   git clone https://github.com/joychetry/ultrapilot.git ~/.agents/skills/ultrapilot
+
+# Claude Code — global
+git clone https://github.com/joychetry/ultrapilot.git ~/.claude/skills/ultrapilot
+
+# Droid (Factory) — global
+git clone https://github.com/joychetry/ultrapilot.git ~/.factory/skills/ultrapilot
+
+# Codex — global
+git clone https://github.com/joychetry/ultrapilot.git ~/.codex/skills/ultrapilot
+```
+
+Then add the `bin/` wrappers to your shell `$PATH` (or call them by absolute
+path):
+
+```bash
+# Pick the one that matches your install above:
+export PATH="$HOME/.pi/agent/skills/ultrapilot/bin:$PATH"       # Pi
+export PATH="$HOME/.agents/skills/ultrapilot/bin:$PATH"         # Pi (universal)
+export PATH="$HOME/.claude/skills/ultrapilot/bin:$PATH"         # Claude Code
+export PATH="$HOME/.factory/skills/ultrapilot/bin:$PATH"        # Droid
+export PATH="$HOME/.codex/skills/ultrapilot/bin:$PATH"         # Codex
+```
+
+The wrappers auto-resolve the install location via `ULTRAPILOT_HOME` first,
+then the conventional per-agent directory, then a few common fallbacks. Set
+`ULTRAPILOT_HOME` to override.
+
+### Project-local install (per-agent)
+
+If you want ultrapilot available only inside a specific project (and not
+globally), install to the project-local skill location:
+
+```bash
+# Pi / Claude Code / Codex — project-local
+cd /path/to/your/project
+git clone https://github.com/joychetry/ultrapilot.git .pi/skills/ultrapilot
+# or:                    git clone ... .agents/skills/ultrapilot
+# or:                    git clone ... .claude/skills/ultrapilot
+```
+
+> Pi and Codex project skills are only loaded after the project is trusted.
+> Claude Code loads them automatically.
+
+### Marketplace install (where available)
+
+Some agents ship a marketplace plugin system. The current marketplaces are:
 
 ```bash
 # Claude Code
@@ -557,51 +612,36 @@ droid plugin install ultrapilot@ultrapilot
 codex plugin install ultrapilot-marketplace
 ```
 
-### Manual install (from git)
-
-```bash
-git clone https://github.com/joychetry/ultrapilot.git
-cd ultrapilot
-
-# Claude Code
-mkdir -p ~/.claude/skills
-cp -r . ~/.claude/skills/ultrapilot/
-
-# Droid
-mkdir -p ~/.factory/skills
-cp -r . ~/.factory/skills/ultrapilot/
-
-# Codex
-mkdir -p ~/.codex/skills
-cp -r . ~/.codex/skills/ultrapilot/
-```
-
-Then add the wrappers to your shell `$PATH` (or invoke by absolute path):
-
-```bash
-# Add to ~/.bashrc / ~/.zshrc
-export PATH="$HOME/.claude/skills/ultrapilot/bin:$PATH"
-```
-
-> The `bin/ultrapilot-run` and `bin/ultrapilot-goals` wrappers auto-resolve the install
-> location by checking `ULTRAPILOT_HOME` first, then the conventional per-agent
-> directories, then a few common fallbacks. Set `ULTRAPILOT_HOME` to override.
+> Pi and most other spec-compliant agents don't have a marketplace concept —
+> they load skills directly from the filesystem, so the manual install above
+> is the canonical path. (`pi` does have a [Pi Packages](https://pi.dev/packages)
+> system for npm-distributed skills; ultrapilot ships as a git repo, not an
+> npm package, to keep zero runtime dependencies.)
 
 ### One-line tarball install
 
 ```bash
+# Default: Claude Code install location. Substitute for Pi / Droid / Codex as needed.
 curl -sL https://github.com/joychetry/ultrapilot/releases/latest/download/ultrapilot.tar.gz \
   | tar -xz -C ~/.claude/skills/ && mv ~/.claude/skills/ultrapilot ~/.claude/skills/ultrapilot
 ```
 
-(Substitute `~/.claude/skills/` for `~/.factory/skills/` or `~/.codex/skills/` per your agent.)
+For Pi:
+
+```bash
+curl -sL https://github.com/joychetry/ultrapilot/releases/latest/download/ultrapilot.tar.gz \
+  | tar -xz -C ~/.pi/agent/skills/ && mv ~/.pi/agent/skills/ultrapilot ~/.pi/agent/skills/ultrapilot
+```
 
 ### Other agents
 
 ultrapilot is a pure-standards SKILL.md plugin — any LLM tool that reads the
-[agentskills.io](https://agentskills.io) spec can load it without modification. The
-`bin/` wrappers are the only filesystem-level assumption, and they're optional
-(you can call `scripts/ultrapilot_run.py` directly).
+[agentskills.io](https://agentskills.io) spec can load it without modification.
+That includes **Pi** (the `~/.pi/agent/skills/` and `~/.agents/skills/` locations
+are scanned automatically), **Claude Code**, **Codex**, **Cursor**, **Aider**,
+**Continue**, **OpenCode**, **Gemini CLI**, and any other spec-compliant
+harness. The `bin/` wrappers are the only filesystem-level assumption, and
+they're optional (you can call `scripts/ultrapilot_run.py` directly).
 
 <!-- HERMES_FOOTNOTE_BEGIN: The blockquote below is the ONLY allowed place
      a ~/.hermes/ path may appear in user-facing docs. It documents the

@@ -9,7 +9,8 @@ All notable changes to `/ultrapilot` are documented here. The format follows [Ke
 
 ### Added
 - `bin/ultrapilot-run` and `bin/ultrapilot-goals`: thin shell wrappers that resolve the install path across all supported agents (Claude Code, Droid, Codex, Hermes, custom `ULTRAPILOT_HOME`).
-- `no-hermes-paths` CI job: scans for hardcoded `~/.hermes/` paths in user-facing files and fails the build on regression. A synthetic-violation test confirms the check is real, not vacuous.
+- **Pi (pi.dev) compatibility.** ultrapilot now installs and runs cleanly on Pi — the `bin/` wrappers auto-resolve the Pi install path (`~/.pi/agent/skills/ultrapilot` or the universal `~/.agents/skills/ultrapilot`), the `SKILL.md` frontmatter meets the Pi spec (name 10 chars, description 312 chars, compatibility 334 chars — all under Pi's hard limits), and the install section documents Pi-specific install steps including the `~/.pi/agent/skills/` location and project-local `.pi/skills/`. Pi was already structurally compatible (it implements the same Agent Skills standard as Claude Code and Codex), but the install path and documentation now reflect that. The CI functional test now exercises the `.pi` install path to prevent regression.
+- `no-hermes-paths` CI job: scans for hardcoded per-agent paths in user-facing files and fails the build on regression. A synthetic-violation test confirms the check is real, not vacuous.
 - Functional CI step that copies ultrapilot to each of `~/.claude/`, `~/.factory/`, `~/.codex/` and verifies the wrappers resolve correctly in a clean env with no Hermes symlink — proves a Claude Code / Droid / Codex user (without Hermes installed) can install and run ultrapilot out of the box.
 - `HERMES_FOOTNOTE_BEGIN` / `HERMES_FOOTNOTE_END` HTML-comment sentinels wrap the one remaining Hermes-specific install note in `SKILL.md` so the `no-hermes-paths` check can allow it without exempting the whole file.
 
